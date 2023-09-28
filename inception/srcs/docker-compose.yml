@@ -1,0 +1,55 @@
+version:  '3.9'
+services:
+    nginx:
+      init: true
+      depends_on:
+        - wordpress
+      container_name: nginx
+      build: ./requirements/nginx
+      volumes:
+        - "wordpress-vol:/var/www/html"
+      ports:
+        - "443:443"
+      networks:
+        - network
+      restart: always
+    wordpress:
+      init: true
+      depends_on:
+        - mariadb
+      container_name: wordpress
+      build: ./requirements/wordpress
+      env_file:
+        - .env
+      networks:
+        - network
+      volumes:
+        - "wordpress-vol:/var/www/html"
+      restart: always
+    mariadb:
+      init: true
+      container_name: mariadb
+      env_file:
+        - .env
+      build: ./requirements/mariadb
+      networks:
+        - network
+      volumes:
+        - "mariadb-vol:/var/lib/mysql"
+      restart: always
+volumes:
+  mariadb-vol:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/athierry/data/mariadb
+      o: bind
+  wordpress-vol:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/athierry/data/wordpress
+      o: bind
+networks:
+  network:
+    driver: bridge
